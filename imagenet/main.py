@@ -322,8 +322,10 @@ def validate(epoch, val_loader, model, criterion, args):
 def load_my_state_dict(self, state_dict):
     own_state = self.state_dict()
 
-    for name, param in state_dict.items():
+    for name, param in own_state.items():
         print(name)
+
+    for name, param in state_dict.items():
         '''
         if 'layer' in name:
             temp = name.split('layer')
