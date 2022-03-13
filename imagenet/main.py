@@ -318,6 +318,37 @@ def validate(epoch, val_loader, model, criterion, args):
 
     return losses.avg, top1.avg, top5.avg
 
+def load_my_state_dict(self, state_dict):
+    own_state = self.state_dict()
+
+    for name, param in state_dict.items():
+        '''
+        if 'layer' in name:
+            temp = name.split('layer')
+            list1 = list(temp[1])
+            list1[1] = '_'
+            temp[1] = ''.join(list1)
+            name = 'layer' + temp[1]
+
+        if 'downsample' in name:
+            temp = name.split('downsample')
+            temp1 = temp[1].split('.')
+            if '0' in temp[1]:
+                temp[1] = '.conv1.' + temp1[2]
+            elif '1' in temp[1]:
+                temp[1] = '.bn1.' + temp1[2]
+
+            name = temp[0] + 'downsample' + temp[1]
+        '''
+        if name not in own_state:
+            print(name)
+            continue
+        '''
+        if isinstance(param, Parameter):
+            # backwards compatibility for serialized parameters
+            param = param.data
+        own_state[name].copy_(param)
+        '''
 
 if __name__ == '__main__':
     main()
