@@ -176,7 +176,7 @@ class HardBinaryConv(nn.Module):
 
         #y = OA(y.int(), b=self.nbits_acc).float() + y - y.int()
 
-        return y*scaling_factor.reshape(1, -1, 1, 1)
+        return y*scaling_factor.reshape(1, -1, 1, 1), psum
 
 
 class BasicBlock(nn.Module):
