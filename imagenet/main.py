@@ -294,7 +294,7 @@ def validate(epoch, val_loader, model, criterion, args, psums=None):
             target = target.cuda()
 
             # compute output
-            logits, psums = model(images, psums)
+            logits, _ = model(images, psums)
             loss = criterion(logits, target)
 
             # measure accuracy and record loss
