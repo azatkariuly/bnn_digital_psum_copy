@@ -108,6 +108,23 @@ def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 
+def total_std(stdv1, m1, n1, stdv2, m2, n2):
+    left_part = ((n1-1)*(stdv1**2) + (n2-1)*(stdv2**2))/(n1+n2-1)
+    right_part = n1*n2*((m1-m2)**2)/((n1+n2)*(n1+n2-1))
+
+    return (left_part+right_part)**0.5
+
+def update_psum_array(psums, psum, my_index):
+    psum = psum.flatten()
+    n_curr, m_curr, std_curr = psums[my_index]
+
+    n_total = n_curr + psum.numel()
+    m_total = (m_curr*n_curr + psum.mean()*psum.numel())/n_total
+    std_total = total_std(std_curr, m_curr, n_curr, psum.std(), psum.mean(), psum.numel())
+
+    psums[my_index] = [n_total, m_total.detach().item(), std_total.detach().item()]
+
+    return psums
 
 class BinaryActivation(nn.Module):
     def __init__(self):
@@ -165,21 +182,26 @@ class HardBinaryConv(nn.Module):
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, nbits_acc=32, s=8):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, nbits_acc=32, s=8, pn=0):
         super(BasicBlock, self).__init__()
 
         self.binary_activation = BinaryActivation()
         self.binary_conv = HardBinaryConv(inplanes, planes, stride=stride, nbits_acc=nbits_acc, s=s)
         self.bn1 = nn.BatchNorm2d(planes)
 
+        self.pn = pn
+
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x):
+    def forward(self, x, psums):
         residual = x
 
         out = self.binary_activation(x)
-        out = self.binary_conv(out)
+        out, psum = self.binary_conv(out)
+
+        update_psum_array(psums, psum, self.pn)
+
         out = self.bn1(out)
 
         if self.downsample is not None:
@@ -214,26 +236,26 @@ class BiRealNet(nn.Module):
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1_0 = self._make_layer(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
-        self.layer1_1 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
-        self.layer1_2 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
-        self.layer1_3 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
-        self.layer2_0 = self._make_layer(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer2_1 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer2_2 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer2_3 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer3_0 = self._make_layer(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer3_1 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer3_2 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer3_3 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer4_0 = self._make_layer(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer4_1 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer4_2 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer4_3 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer1_0 = self._make_layer(block, 64, layers[0], nbits_acc=nbits_acc, s=s, pn=0)
+        self.layer1_1 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s, pn=1)
+        self.layer1_2 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s, pn=2)
+        self.layer1_3 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s, pn=3)
+        self.layer2_0 = self._make_layer(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s, pn=4)
+        self.layer2_1 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s, pn=5)
+        self.layer2_2 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s, pn=6)
+        self.layer2_3 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s, pn=7)
+        self.layer3_0 = self._make_layer(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s, pn=8)
+        self.layer3_1 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s, pn=9)
+        self.layer3_2 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s, pn=10)
+        self.layer3_3 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s, pn=11)
+        self.layer4_0 = self._make_layer(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s, pn=12)
+        self.layer4_1 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s, pn=13)
+        self.layer4_2 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s, pn=14)
+        self.layer4_3 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s, pn=15)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
-    def _make_layer(self, block, planes, blocks, stride=1, nbits_acc=32, s=8):
+    def _make_layer(self, block, planes, blocks, stride=1, nbits_acc=32, s=8, pn=0):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = DownsampleBlock(self.inplanes, planes * block.expansion, stride)
@@ -245,40 +267,40 @@ class BiRealNet(nn.Module):
             )
             '''
 
-        return block(self.inplanes, planes, stride, downsample, nbits_acc=nbits_acc, s=s)
+        return block(self.inplanes, planes, stride, downsample, nbits_acc=nbits_acc, s=s, pn=pn)
 
-    def _make_layer_2(self, block, planes, blocks, stride=1, nbits_acc=32, s=8):
+    def _make_layer_2(self, block, planes, blocks, stride=1, nbits_acc=32, s=8, pn=0):
         self.inplanes = planes * block.expansion
 
-        return block(self.inplanes, planes, nbits_acc=nbits_acc, s=s)
+        return block(self.inplanes, planes, nbits_acc=nbits_acc, s=s, pn=pn)
 
-    def forward(self, x):
+    def forward(self, x, psums):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.maxpool(x)
 
-        x = self.layer1_0(x)
-        x = self.layer1_1(x)
-        x = self.layer1_2(x)
-        x = self.layer1_3(x)
-        x = self.layer2_0(x)
-        x = self.layer2_1(x)
-        x = self.layer2_2(x)
-        x = self.layer2_3(x)
-        x = self.layer3_0(x)
-        x = self.layer3_1(x)
-        x = self.layer3_2(x)
-        x = self.layer3_3(x)
-        x = self.layer4_0(x)
-        x = self.layer4_1(x)
-        x = self.layer4_2(x)
-        x = self.layer4_3(x)
+        x, psums = self.layer1_0(x, psums)
+        x, psums = self.layer1_1(x, psums)
+        x, psums = self.layer1_2(x, psums)
+        x, psums = self.layer1_3(x, psums)
+        x, psums = self.layer2_0(x, psums)
+        x, psums = self.layer2_1(x, psums)
+        x, psums = self.layer2_2(x, psums)
+        x, psums = self.layer2_3(x, psums)
+        x, psums = self.layer3_0(x, psums)
+        x, psums = self.layer3_1(x, psums)
+        x, psums = self.layer3_2(x, psums)
+        x, psums = self.layer3_3(x, psums)
+        x, psums = self.layer4_0(x, psums)
+        x, psums = self.layer4_1(x, psums)
+        x, psums = self.layer4_2(x, psums)
+        x, psums = self.layer4_3(x, psums)
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
 
-        return x
+        return x, psums
 
 
 def birealnet18(pretrained=False, **kwargs):

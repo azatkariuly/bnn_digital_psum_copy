@@ -175,8 +175,17 @@ def main():
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
+    #num, mean, std
+    psums = [[0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0],
+             [0, 0, 0],[0, 0, 0]]
     if args.evaluate:
-        valid_obj, valid_top1_acc, valid_top5_acc = validate(0, val_loader, model, criterion, args)
+        valid_obj, valid_top1_acc, valid_top5_acc = validate(0, val_loader, model, criterion, args, psums)
         print('Best Accuracy:', valid_top1_acc)
         return
 
@@ -268,7 +277,7 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
 
     return losses.avg, top1.avg, top5.avg
 
-def validate(epoch, val_loader, model, criterion, args):
+def validate(epoch, val_loader, model, criterion, args, psums):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f')
@@ -285,7 +294,7 @@ def validate(epoch, val_loader, model, criterion, args):
             target = target.cuda()
 
             # compute output
-            logits = model(images)
+            logits, psums = model(images, psums)
             loss = criterion(logits, target)
 
             # measure accuracy and record loss
@@ -300,7 +309,7 @@ def validate(epoch, val_loader, model, criterion, args):
             end = time.time()
 
             # plot progress
-            bar.suffix  = '{phase} - Epoch: [{epoch}]({batch}/{size}) | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | top1: {top1: .4f} | top5: {top5: .4f}'.format(
+            bar.suffix  = '{phase} - Epoch: [{epoch}]({batch}/{size}) | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | top1: {top1: .4f} | top5: {top5: .4f} | ps: {ps: .4f}'.format(
                         phase='TEST',
                         epoch=epoch,
                         batch=i + 1,
@@ -311,6 +320,7 @@ def validate(epoch, val_loader, model, criterion, args):
                         loss=losses.avg,
                         top1=top1.avg,
                         top5=top5.avg,
+                        ps=psums[0][0],
                         )
             bar.next()
         bar.finish()
