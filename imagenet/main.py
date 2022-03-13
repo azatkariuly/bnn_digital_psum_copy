@@ -323,9 +323,6 @@ def validate(epoch, val_loader, model, criterion, args):
 def load_my_state_dict(self, state_dict):
     own_state = self.state_dict()
 
-    for name, param in own_state.items():
-        print(name)
-
     for name, param in state_dict.items():
         if 'layer' in name:
             temp = name.split('layer')
@@ -345,6 +342,7 @@ def load_my_state_dict(self, state_dict):
             name = temp[0] + 'downsample' + temp[1]
 
         if name not in own_state:
+            print(name)
             continue
 
         if isinstance(param, Parameter):
