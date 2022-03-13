@@ -279,6 +279,8 @@ class BiRealNet(nn.Module):
         x = self.bn1(x)
         x = self.maxpool(x)
 
+        print('Initial psums:', psums)
+
         x, psums = self.layer1_0(x, psums)
         x, psums = self.layer1_1(x, psums)
         x, psums = self.layer1_2(x, psums)
@@ -296,11 +298,13 @@ class BiRealNet(nn.Module):
         x, psums = self.layer4_2(x, psums)
         x, psums = self.layer4_3(x, psums)
 
+        print('Final psums:', psums)
+
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
 
-        return x, _
+        return x, None
 
 
 def birealnet18(pretrained=False, **kwargs):
