@@ -185,7 +185,7 @@ def main():
              [0, 0, 0],[0, 0, 0],
              [0, 0, 0],[0, 0, 0]]
     if args.evaluate:
-        valid_obj, valid_top1_acc, valid_top5_acc = validate(0, val_loader, model, criterion, args, psums)
+        valid_obj, valid_top1_acc, valid_top5_acc = validate(0, val_loader, model, criterion, args, psums=psums)
         print('Best Accuracy:', valid_top1_acc)
         return
 
@@ -277,7 +277,7 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
 
     return losses.avg, top1.avg, top5.avg
 
-def validate(epoch, val_loader, model, criterion, args, psums):
+def validate(epoch, val_loader, model, criterion, args, psums=None):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f')
@@ -295,6 +295,7 @@ def validate(epoch, val_loader, model, criterion, args, psums):
 
             # compute output
             logits, psums = model(images, psums)
+            print(psums)
             loss = criterion(logits, target)
 
             # measure accuracy and record loss
