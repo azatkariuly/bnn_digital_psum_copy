@@ -1,0 +1,5 @@
+2022-03-04 04:50:08 - INFO - saving to ./results/garbage
+2022-03-04 04:50:08 - DEBUG - run arguments: Namespace(results_dir='./results', save='garbage', dataset='cifar10', model='resnet18_binary', input_size=None, model_config='', type='torch.cuda.FloatTensor', gpus='0', workers=8, epochs=90, start_epoch=0, batch_size=256, optimizer='SGD', lr=0.005, momentum=0.9, weight_decay=2.5e-05, print_freq=50, resume='', evaluate=None, pretrained='results/resnet18_binary/model_best.pth.tar', wbits=1, acc_bits=8, t=64, k=2, s=2.0)
+2022-03-04 04:50:08 - INFO - creating model resnet18_binary
+2022-03-04 04:50:08 - INFO - created model with configuration: {'input_size': None, 'dataset': 'cifar10', 'nbits': 1, 'T': 64, 'nbits_acc': 8, 'k': 2, 's': 2.0}
+2022-03-04 04:50:08 - INFO - loaded checkpoint 'results/resnet18_binary/model_best.pth.tar' (epoch 485)
