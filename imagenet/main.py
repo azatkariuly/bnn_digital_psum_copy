@@ -290,6 +290,8 @@ def validate(epoch, val_loader, model, criterion, args, psums=None):
     with torch.no_grad():
         end = time.time()
         for i, (images, target) in enumerate(val_loader):
+            if i > 5:
+                break
             images = images.cuda()
             target = target.cuda()
 
@@ -324,7 +326,7 @@ def validate(epoch, val_loader, model, criterion, args, psums=None):
                         )
             bar.next()
         bar.finish()
-
+        print(psums)
         print(' * acc@1 {top1.avg:.3f} acc@5 {top5.avg:.3f}'
               .format(top1=top1, top5=top5))
 
