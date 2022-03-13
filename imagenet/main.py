@@ -329,7 +329,7 @@ def load_my_state_dict(self, state_dict):
             list1 = list(temp[1])
             list1[1] = '_'
             temp[1] = ''.join(list1)
-            name = 'layer' + temp[1]
+            name = 'module.layer' + temp[1]
 
         if 'downsample' in name:
             temp = name.split('downsample')
