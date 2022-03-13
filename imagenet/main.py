@@ -323,6 +323,7 @@ def load_my_state_dict(self, state_dict):
     own_state = self.state_dict()
 
     for name, param in state_dict.items():
+        print(name)
         '''
         if 'layer' in name:
             temp = name.split('layer')
