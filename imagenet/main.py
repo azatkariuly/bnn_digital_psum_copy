@@ -13,6 +13,7 @@ import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 import torch.utils.data.distributed
 
+from torch.nn.parameter import Parameter
 #sys.path.append("../")
 from utils import *
 from torchvision import datasets, transforms
