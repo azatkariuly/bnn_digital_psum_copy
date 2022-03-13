@@ -214,10 +214,22 @@ class BiRealNet(nn.Module):
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer1_0 = self._make_layer(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
+        self.layer1_1 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
+        self.layer1_2 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
+        self.layer1_3 = self._make_layer_2(block, 64, layers[0], nbits_acc=nbits_acc, s=s)
+        self.layer2_0 = self._make_layer(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer2_1 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer2_2 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer2_3 = self._make_layer_2(block, 128, layers[1], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer3_0 = self._make_layer(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer3_1 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer3_2 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer3_3 = self._make_layer_2(block, 256, layers[2], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer4_0 = self._make_layer(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer4_1 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer4_2 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
+        self.layer4_3 = self._make_layer_2(block, 512, layers[3], stride=2, nbits_acc=nbits_acc, s=s)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
@@ -233,13 +245,12 @@ class BiRealNet(nn.Module):
             )
             '''
 
-        layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, nbits_acc=nbits_acc, s=s))
-        self.inplanes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, nbits_acc=nbits_acc, s=s))
+        return block(self.inplanes, planes, stride, downsample, nbits_acc=nbits_acc, s=s)
 
-        return nn.Sequential(*layers)
+    def _make_layer_2(self, block, planes, blocks, stride=1, nbits_acc=32, s=8):
+        self.inplanes = planes * block.expansion
+
+        return block(self.inplanes, planes, nbits_acc=nbits_acc, s=s)
 
     def forward(self, x):
         x = self.conv1(x)

@@ -337,15 +337,14 @@ def load_my_state_dict(self, state_dict):
         if 'downsample' in name:
             temp = name.split('downsample')
             temp1 = temp[1].split('.')
-            if '0' in temp[1]:
+            if '1' in temp[1]:
                 temp[1] = '.conv1.' + temp1[2]
-            elif '1' in temp[1]:
+            elif '2' in temp[1]:
                 temp[1] = '.bn1.' + temp1[2]
 
             name = temp[0] + 'downsample' + temp[1]
         '''
         if name not in own_state:
-            print(name)
             continue
         '''
         if isinstance(param, Parameter):
