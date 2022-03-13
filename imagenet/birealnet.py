@@ -190,8 +190,8 @@ class BasicBlock(nn.Module):
         return out
 
 class DownsampleBlock(nn.Module):
-    def __init__(self):
-        super(DownsampleBlock, self).__init__(inplanes, planes, stride)
+    def __init__(self, inplanes, planes, stride):
+        super(DownsampleBlock, self).__init__()
 
         self.avgpool1 = nn.AvgPool2d(kernel_size=2, stride=stride)
         self.conv1 = conv1x1(inplanes, planes)
