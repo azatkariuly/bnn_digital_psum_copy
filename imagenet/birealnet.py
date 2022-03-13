@@ -300,7 +300,7 @@ class BiRealNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
 
-        return x, psums
+        return x, _
 
 
 def birealnet18(pretrained=False, **kwargs):
