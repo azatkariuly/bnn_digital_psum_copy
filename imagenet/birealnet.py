@@ -209,7 +209,7 @@ class BasicBlock(nn.Module):
 
         out += residual
 
-        return out
+        return out, psums
 
 class DownsampleBlock(nn.Module):
     def __init__(self, inplanes, planes, stride):
