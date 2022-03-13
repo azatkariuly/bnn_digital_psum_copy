@@ -189,6 +189,22 @@ class BasicBlock(nn.Module):
 
         return out
 
+class DownsampleBlock(nn.Module):
+    def __init__(self):
+        super(DownsampleBlock, self).__init__(inplanes, planes, stride)
+
+        self.avgpool1 = nn.AvgPool2d(kernel_size=2, stride=stride)
+        self.conv1 = conv1x1(inplanes, planes)
+        self.bn1 = nn.BatchNorm2d(planes)
+
+    def forward(self, x):
+        out = self.avgpool1(x)
+        out = self.conv1(out)
+        out = self.bn1(out)
+
+        return out
+
+
 class BiRealNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, zero_init_residual=False, nbits_acc=32, s=8):
@@ -208,11 +224,14 @@ class BiRealNet(nn.Module):
     def _make_layer(self, block, planes, blocks, stride=1, nbits_acc=32, s=8):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = DownsampleBlock(self.inplanes, planes * block.expansion, stride)
+            '''
             downsample = nn.Sequential(
                 nn.AvgPool2d(kernel_size=2, stride=stride),
                 conv1x1(self.inplanes, planes * block.expansion),
                 nn.BatchNorm2d(planes * block.expansion),
             )
+            '''
 
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample, nbits_acc=nbits_acc, s=s))
