@@ -298,8 +298,8 @@ def forward(data_loader, model, criterion, epoch=0, training=True, optimizer=Non
 
     bar = Bar('Processing', max=len(data_loader))
     for i, (inputs, target) in enumerate(data_loader):
-        #if i > 10:
-        #    break
+        if i > 10:
+            break
         # measure data loading time
         data_time.update(time.time() - end)
         if args.gpus is not None:
@@ -310,16 +310,7 @@ def forward(data_loader, model, criterion, epoch=0, training=True, optimizer=Non
                 input_var = Variable(inputs.type(args.type), volatile=not training)
                 target_var = Variable(target)
                 # compute output
-                output, _ = model(input_var, psums)
-
-                #num, mean, std
-                psums = [[0, 0, 0],[0, 0, 0],
-                         [0, 0, 0],[0, 0, 0],
-                         [0, 0, 0],[0, 0, 0],
-                         [0, 0, 0],[0, 0, 0],
-                         [0, 0, 0],[0, 0, 0],
-                         [0, 0, 0],[0, 0, 0],
-                         [0, 0, 0],[0, 0, 0]]
+                output, psums = model(input_var, psums)
         else:
             input_var = Variable(inputs.type(args.type), volatile=not training)
             target_var = Variable(target)
