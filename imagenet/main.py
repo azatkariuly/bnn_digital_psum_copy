@@ -290,8 +290,8 @@ def validate(epoch, val_loader, model, criterion, args, psums=None):
     with torch.no_grad():
         end = time.time()
         for i, (images, target) in enumerate(val_loader):
-            if i > 5:
-                break
+            #if i > 5:
+            #    break
             images = images.cuda()
             target = target.cuda()
 
