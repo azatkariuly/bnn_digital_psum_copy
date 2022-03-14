@@ -297,6 +297,15 @@ def validate(epoch, val_loader, model, criterion, args, psums=None):
 
             # compute output
             logits, psums = model(images, psums)
+            #num, mean, std
+            psums = [[0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0],
+                     [0, 0, 0],[0, 0, 0]]
             loss = criterion(logits, target)
 
             # measure accuracy and record loss
