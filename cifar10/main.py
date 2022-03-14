@@ -311,6 +311,15 @@ def forward(data_loader, model, criterion, epoch=0, training=True, optimizer=Non
                 target_var = Variable(target)
                 # compute output
                 output, _ = model(input_var, psums)
+
+                #num, mean, std
+                psums = [[0, 0, 0],[0, 0, 0],
+                         [0, 0, 0],[0, 0, 0],
+                         [0, 0, 0],[0, 0, 0],
+                         [0, 0, 0],[0, 0, 0],
+                         [0, 0, 0],[0, 0, 0],
+                         [0, 0, 0],[0, 0, 0],
+                         [0, 0, 0],[0, 0, 0]]
         else:
             input_var = Variable(inputs.type(args.type), volatile=not training)
             target_var = Variable(target)
