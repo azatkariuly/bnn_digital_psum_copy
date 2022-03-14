@@ -310,7 +310,7 @@ def forward(data_loader, model, criterion, epoch=0, training=True, optimizer=Non
                 input_var = Variable(inputs.type(args.type), volatile=not training)
                 target_var = Variable(target)
                 # compute output
-                output, psums = model(input_var, psums)
+                output, _ = model(input_var, psums)
         else:
             input_var = Variable(inputs.type(args.type), volatile=not training)
             target_var = Variable(target)
